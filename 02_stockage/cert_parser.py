@@ -2,7 +2,7 @@
 import urllib.request
 import datetime
 import  xml.etree.ElementTree  as ET
-from stockage  import init_bd , sauvgarder_alerte_cert
+from stockage import init_bd, sauvegarder_alerte_cert
 URL_CERT = "https://www.cert.ssi.gouv.fr/alerte/feed/"
 
 
@@ -48,7 +48,7 @@ try:
              print ()
              print (" Envoie au moteur de stockage  ")
              init_bd()
-             sauvgarder_alerte_cert(titre, lien,  date_publication)
+             sauvegarder_alerte_cert(titre, lien, date_publication)
         else:
                print("Aucun alerte est trouvé dans le flux") 
 
