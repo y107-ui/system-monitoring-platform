@@ -1,19 +1,25 @@
 import os
 import smtplib
+from pathlib import Path
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from crise import charger_config, verifier_bash, verifier_python, verifier_processus
 
-TEMPLATE = os.path.expanduser("~/scripts/template_mail.txt")
-
 # À adapter
+TEMPLATE = Path(__file__).resolve().parents[1] / "config" / "template_mail.txt"
+
 SMTP_SERVER = "partage.univ-avignon.fr"
 SMTP_PORT = 465
-EXPEDITEUR = "younes.baziz@alumni.univ-avignon.fr"   # ou @univ-avignon.fr
-MOT_DE_PASSE = "HFo-JSa-ZGJ-QVu"
+
+EXPEDITEUR = "younes.baziz@alumni.univ-avignon.fr"
 DESTINATAIRE = "younes.baziz@alumni.univ-avignon.fr"
 SUJET = "Alerte supervision - situation de crise"
+
+MOT_DE_PASSE = os.getenv("SMTP_PASSWORD")
+
+if not MOT_DE_PASSE:
+    raise RuntimeError("La variable d'environnement SMTP_PASSWORD n'est pas définie.")
 
 def charger_template():
     with open(TEMPLATE, "r", encoding="utf-8") as f:
@@ -39,8 +45,8 @@ def envoyer_mail(alertes):
     message.attach(MIMEText(contenu, "plain", "utf-8"))
 
     with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as serveur:
-      serveur.login(EXPEDITEUR, MOT_DE_PASSE)
-      serveur.send_message(message)
+     serveur.login(EXPEDITEUR, MOT_DE_PASSE)
+     serveur.send_message(message)
 
     print("E-mail envoyé avec succès.")
 
