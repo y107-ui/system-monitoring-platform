@@ -1,9 +1,11 @@
 import sqlite3
 import json
-import os
+from pathlib import Path
 
-BDD = os.path.expanduser("~/scripts/monitoring.db")
-CONFIG = os.path.expanduser("~/scripts/config_crise.json")
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+BDD = BASE_DIR / "data" / "monitoring.db"
+CONFIG = BASE_DIR / "config" / "config_crise.example.json"
 
 def charger_config():
     """Charge les seuils de crise depuis le fichier JSON"""

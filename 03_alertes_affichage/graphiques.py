@@ -1,10 +1,13 @@
 import sqlite3
 import json
 import pygal
-import os
+from pathlib import Path
 
-BDD = os.path.expanduser("~/scripts/monitoring.db")
-DOSSIER_SORTIE = os.path.expanduser("~/scripts")
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+BDD = BASE_DIR / "data" / "monitoring.db"
+DOSSIER_SORTIE = BASE_DIR / "05_interface_web" / "static"
+DOSSIER_SORTIE.mkdir(parents=True, exist_ok=True)
 
 def nettoyer_cles(obj):
     """Nettoie les espaces inutiles dans les clés du JSON"""
@@ -78,7 +81,7 @@ def creer_graphique_bash(labels, valeurs):
     chart.title = "Evolution de la mémoire (%) - Sonde bash"
     chart.x_labels = labels
     chart.add("Mémoire %", valeurs)
-    chemin = os.path.join(DOSSIER_SORTIE, "graph_bash_memory.svg")
+    chemin = str(DOSSIER_SORTIE / "graph_bash_memory.svg")
     chart.render_to_file(chemin)
     print(f"Graphique créé : {chemin}")
 
@@ -87,7 +90,7 @@ def creer_graphique_python(labels, valeurs):
     chart.title = "Evolution du CPU (%) - Sonde python"
     chart.x_labels = labels
     chart.add("CPU %", valeurs)
-    chemin = os.path.join(DOSSIER_SORTIE, "graph_python_cpu.svg")
+    chemin = str(DOSSIER_SORTIE / "graph_python_cpu.svg")
     chart.render_to_file(chemin)
     print(f"Graphique créé : {chemin}")
 
@@ -96,7 +99,7 @@ def creer_graphique_processus(labels, valeurs):
     chart.title = "Evolution du nombre total de processus"
     chart.x_labels = labels
     chart.add("Total processus", valeurs)
-    chemin = os.path.join(DOSSIER_SORTIE, "graph_processus_total.svg")
+    chemin = str(DOSSIER_SORTIE / "graph_processus_total.svg")
     chart.render_to_file(chemin)
     print(f"Graphique créé : {chemin}")
 

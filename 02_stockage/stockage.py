@@ -2,12 +2,15 @@ import sqlite3
 import json
 import subprocess
 import datetime
-import os
+from pathlib import Path
 
-BDD = "monitoring.db"
+BASE_DIR = Path(__file__).resolve().parents[1]
+BDD = BASE_DIR / "data" / "monitoring.db"
+COLLECTE_DIR = BASE_DIR / "01_collecte"
 
 def init_bd():
     """Crée les tables si elles n'existent pas"""
+    BDD.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(BDD)
     c = conn.cursor()
 
@@ -39,16 +42,17 @@ def execute_sonde(script):
     """Lance une sonde locale et récupère son JSON"""
     print(f"> Exécution de {script}")
     try:
-        if script.endswith(".py"):
+        script = Path(script)
+        if script.suffix == ".py":
             resultat = subprocess.run(
-                ["python3", script],
+                ["python3", str(script)],
                 capture_output=True,
                 text=True,
                 timeout=5
             )
         else:
             resultat = subprocess.run(
-                ["./" + script],
+                ["bash", str(script)],
                 capture_output=True,
                 text=True,
                 timeout=5
@@ -132,13 +136,13 @@ if __name__ == "__main__":
     init_bd()
 
     sondes = [
-        ("bash", "sonde_bash.sh"),
-        ("python", "sonde_bash.py"),
-        ("processus", "sonde_processus.sh"),
+        ("bash", COLLECTE_DIR / "sonde_bash.sh"),
+        ("python", COLLECTE_DIR / "sonde_bash.py"),
+        ("processus", COLLECTE_DIR / "sonde_processus.sh"),
     ]
 
     for nom, script in sondes:
-        if os.path.exists(script):
+        if Path(script).exists():
             donnees = execute_sonde(script)
             if donnees:
                 sauvegarder_mesure("yb", nom, donnees)
