@@ -4,11 +4,11 @@
 
 Ce projet consiste à développer une plateforme de supervision système en Bash et Python. Il permet de :
 
-- Collecter des métriques système à intervalles réguliers (CPU, RAM, disque, réseau)
+- Collecter des métriques système à intervalles réguliers (CPU, RAM, processus)
 - Les stocker dans une base de données SQLite3
 - Détecter des situations de crise et envoyer des alertes par e-mail
 - Visualiser les historiques sous forme de graphiques SVG
-- Superviser des machines distantes via SSH
+- Gérer et superviser un parc de machines
 - Consulter les résultats depuis une interface web Flask
 
 ---
@@ -16,12 +16,11 @@ Ce projet consiste à développer une plateforme de supervision système en Bash
 ## 🧰 Technologies utilisées
 
 - **Python 3** (collecte, stockage, analyse, interface web)
-- **Bash** (sondes système légères)
-- **SQLite3** (persistance des métriques)
+- **Bash** (sondes système)
+- **SQLite3** (persistance des métriques dans `data/monitoring.db`)
 - **Flask** (interface web)
 - **Pygal** (génération de graphiques SVG)
 - **psutil** (métriques système)
-- **Paramiko** (connexion SSH distante)
 - **BeautifulSoup4 + Requests** (scraping CERT-FR)
 - **SMTP** (envoi d'alertes e-mail)
 
@@ -31,42 +30,42 @@ Ce projet consiste à développer une plateforme de supervision système en Bash
 
 ### ✅ Étape 1 : Collecte d'informations
 
-- Sonde CPU, RAM, disque, réseau via psutil (Python)
-- Sonde complémentaire en Bash
+- `sonde_bash.sh` — collecte mémoire via commandes Bash
+- `sonde_bash.py` — collecte CPU/RAM via psutil (Python)
+- `sonde_processus.sh` — collecte du nombre de processus actifs
 
 ### ✅ Étape 2 : Stockage et archivage
 
-- Insertion des métriques dans une base SQLite3
-- Parseur CERT-FR : récupération et stockage des bulletins de sécurité
-
-**Options choisies :**
-- Format SQLite3 pour les requêtes et l'historique
-- Historique consultable depuis l'interface web
+- `stockage.py` — insertion des métriques dans la base SQLite3
+- `cert_parser.py` — récupération et stockage des bulletins CERT-FR
 
 ### ✅ Étape 3 : Alertes et affichage
 
-- Détection automatique des crises (seuils configurables : CPU, RAM, disque)
-- Envoi d'un e-mail à l'administrateur en cas de crise (horodatage + détails)
-- Génération automatique de graphiques SVG avec Pygal
+- `crise.py` — détection automatique des crises (seuils configurables)
+- `alerte_mail.py` — envoi d'un e-mail en cas de crise
+- `graphiques.py` — génération des graphiques SVG CPU/mémoire
+- `graphiques_parc.py` — génération des graphiques SVG pour le parc
 
-**Options choisies :**
-- Seuils de crise configurables dans `crise.py`
+### ✅ Étape 4 : Gestion du parc
 
-### ✅ Étape 4 : Supervision distante
-
-- Connexion SSH à une machine distante via Paramiko
-- Récupération des métriques à distance et stockage en base
+- `gestion_parc.py` — supervision et collecte sur un parc de machines
 
 ### ✅ Étape 5 : Interface Web (Flask)
 
-- Dashboard affichant les graphiques SVG
-- Consultation des dernières métriques collectées
+- `webapp.py` — dashboard Flask affichant les graphiques SVG
+- Graphiques disponibles : CPU Python, mémoire Bash, processus, parc CPU, parc mémoire
 
 ---
 
 ## 🔧 Utilisation
 
-### ⚡ Collecte et stockage :
+### ⚡ Collecte des métriques :
+
+    bash 01_collecte/sonde_bash.sh
+    bash 01_collecte/sonde_processus.sh
+    python3 01_collecte/sonde_bash.py
+
+### 🗄️ Stockage en base :
 
     python3 02_stockage/stockage.py
 
@@ -78,13 +77,18 @@ Ce projet consiste à développer une plateforme de supervision système en Bash
 
     python3 03_alertes_affichage/crise.py
 
+### 📧 Envoi d'alerte mail :
+
+    python3 03_alertes_affichage/alerte_mail.py
+
 ### 📈 Génération des graphiques :
 
     python3 03_alertes_affichage/graphiques.py
+    python3 03_alertes_affichage/graphiques_parc.py
 
-### 🔐 Supervision SSH distante :
+### 🖥️ Gestion du parc :
 
-    python3 04_gestion_parc/supervision_ssh.py
+    python3 04_gestion_parc/gestion_parc.py
 
 ### 🌐 Interface Web :
 
@@ -94,34 +98,61 @@ Puis accéder sur : http://127.0.0.1:5000
 
 ---
 
-## ⏱️ Automatisation avec Cron
+## ⚙️ Configuration
 
-La collecte est automatisable via cron (testé sur VM Linux) :
+Copier et adapter le fichier de configuration :
+
+    cp config/config_crise.example.json config/config_crise.json
+
+Les seuils (CPU, RAM, disque) sont modifiables dans ce fichier.
+Le template d'e-mail est personnalisable dans `config/template_mail.txt`.
+
+---
+
+## ⏱️ Automatisation avec Cron
 
     crontab -e
 
-Exemple pour une collecte toutes les 5 minutes :
+Exemple toutes les 5 minutes :
 
     */5 * * * * /usr/bin/python3 /chemin/vers/02_stockage/stockage.py >> /var/log/monitoring.log 2>&1
 
 ---
 
-## 🛠️ Scripts principaux
+## 🛠️ Structure du projet
 
-- `01_collecte/` — sondes Bash et Python
-- `02_stockage/stockage.py` — insertion SQLite
-- `02_stockage/cert_parser.py` — parsing CERT-FR
-- `03_alertes_affichage/crise.py` — détection de crise + envoi mail
-- `03_alertes_affichage/graphiques.py` — génération graphiques SVG
-- `04_gestion_parc/supervision_ssh.py` — supervision SSH distante
-- `05_interface_web/webapp.py` — dashboard Flask
+    ams-monitoring/
+    ├── 01_collecte/
+    │   ├── sonde_bash.sh
+    │   ├── sonde_bash.py
+    │   └── sonde_processus.sh
+    ├── 02_stockage/
+    │   ├── stockage.py
+    │   └── cert_parser.py
+    ├── 03_alertes_affichage/
+    │   ├── crise.py
+    │   ├── alerte_mail.py
+    │   ├── graphiques.py
+    │   └── graphiques_parc.py
+    ├── 04_gestion_parc/
+    │   └── gestion_parc.py
+    ├── 05_interface_web/
+    │   ├── static/
+    │   ├── templates/index.html
+    │   └── webapp.py
+    ├── config/
+    │   ├── config_crise.example.json
+    │   └── template_mail.txt
+    ├── data/
+    │   └── monitoring.db
+    └── requirements.txt
 
 ---
 
 ## 🏆 Remarques
 
 - Tous les scripts ont été testés sur une VM Linux (Debian/Ubuntu)
-- Les seuils de crise sont configurables directement dans `crise.py`
+- Les seuils de crise sont configurables via `config/config_crise.example.json`
 - Le projet couvre la chaîne complète : collecte → stockage → alerte → visualisation
 
 ---
