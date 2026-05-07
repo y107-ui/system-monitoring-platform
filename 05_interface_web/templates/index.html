@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Monitoring du parc</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background: #f7f7f7; }
+        h1, h2, h3 { color: #222; }
+        .bloc { background: white; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        img { max-width: 100%; height: auto; border: 1px solid #ddd; margin-top: 10px; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; }
+        a { color: #0b57d0; }
+    </style>
+</head>
+<body>
+    <h1>Plateforme de monitoring</h1>
+
+    <div class="bloc">
+        <h2>Dernière alerte CERT</h2>
+        {% if alerte %}
+            <p><strong>Titre :</strong> {{ alerte.titre }}</p>
+            <p><strong>Date publication :</strong> {{ alerte.date_publication }}</p>
+            <p><strong>Date récupération :</strong> {{ alerte.date_recuperation }}</p>
+            <p><a href="{{ alerte.lien }}" target="_blank">Voir l’alerte</a></p>
+        {% else %}
+            <p>Aucune alerte trouvée.</p>
+        {% endif %}
+    </div>
+
+    <div class="bloc">
+        <h2>Dernières mesures</h2>
+        {% for machine, sondes in mesures.items() %}
+            <h3>Machine : {{ machine }}</h3>
+            {% for sonde, contenu in sondes.items() %}
+                <p><strong>Sonde :</strong> {{ sonde }} — <strong>Horodatage :</strong> {{ contenu.timestamp }}</p>
+                <pre>{{ contenu.donnees }}</pre>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <div class="bloc">
+        <h2>Graphiques du parc</h2>
+        <h3>CPU</h3>
+        <img src="{{ url_for('static', filename='graph_parc_cpu.svg') }}" alt="Graphe CPU">
+
+        <h3>Mémoire</h3>
+        <img src="{{ url_for('static', filename='graph_parc_memoire.svg') }}" alt="Graphe mémoire">
+    </div>
+</body>
+</html>

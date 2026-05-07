@@ -1,0 +1,6 @@
+{
+  "cpu": 1,
+  "memoire": 10,
+  "disque": 50,
+  "processus": 100
+}

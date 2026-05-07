@@ -1,0 +1,13 @@
+Alerte supervision
+
+Bonjour,
+
+Une situation de crise a été détectée sur la plateforme de supervision.
+
+Détails des alertes :
+{alertes}
+
+Merci de vérifier rapidement l'état du système.
+
+Cordialement,
+Plateforme de supervision
