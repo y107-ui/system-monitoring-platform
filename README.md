@@ -2,14 +2,14 @@
 
 ## 🚀 Objectif du projet
 
-Ce projet consiste à développer une plateforme de supervision système réalisée en Bash et Python. Il permet de :
+Ce projet consiste à développer une plateforme de supervision système en Bash et Python. Il permet de :
 
 - Collecter des métriques système à intervalles réguliers (CPU, RAM, disque, réseau)
 - Les stocker dans une base de données SQLite3
 - Détecter des situations de crise et envoyer des alertes par e-mail
-- Afficher les historiques sous forme de graphiques
+- Visualiser les historiques sous forme de graphiques SVG
 - Superviser des machines distantes via SSH
-- Consulter les résultats via une interface web Flask
+- Consulter les résultats depuis une interface web Flask
 
 ---
 
@@ -17,12 +17,12 @@ Ce projet consiste à développer une plateforme de supervision système réalis
 
 - **Python 3** (collecte, stockage, analyse, interface web)
 - **Bash** (sondes système légères)
-- **SQLite3** (stockage des métriques)
+- **SQLite3** (persistance des métriques)
 - **Flask** (interface web)
 - **Pygal** (génération de graphiques SVG)
-- **psutil** (métriques système Python)
-- **Paramiko / SSH** (supervision distante)
-- **BeautifulSoup4 + Requests** (parsing bulletins CERT-FR)
+- **psutil** (métriques système)
+- **Paramiko** (connexion SSH distante)
+- **BeautifulSoup4 + Requests** (scraping CERT-FR)
 - **SMTP** (envoi d'alertes e-mail)
 
 ---
@@ -31,29 +31,36 @@ Ce projet consiste à développer une plateforme de supervision système réalis
 
 ### ✅ Étape 1 : Collecte d'informations
 
-- Sonde CPU, RAM, disque, réseau via **psutil** (Python)
-- Sonde système complémentaire en **Bash**
+- Sonde CPU, RAM, disque, réseau via psutil (Python)
+- Sonde complémentaire en Bash
 
 ### ✅ Étape 2 : Stockage et archivage
 
-- Insertion des métriques dans une base **SQLite3**
-- Parseur **CERT-FR** : récupération et stockage des bulletins de sécurité
+- Insertion des métriques dans une base SQLite3
+- Parseur CERT-FR : récupération et stockage des bulletins de sécurité
+
+**Options choisies :**
+- Format SQLite3 pour les requêtes et l'historique
+- Historique consultable depuis l'interface web
 
 ### ✅ Étape 3 : Alertes et affichage
 
-- Détection automatique des crises (seuils configurables sur CPU, RAM, disque)
-- Envoi d'un e-mail à l'administrateur en cas de crise (avec horodatage et détails)
-- Génération de graphiques **SVG** avec Pygal
+- Détection automatique des crises (seuils configurables : CPU, RAM, disque)
+- Envoi d'un e-mail à l'administrateur en cas de crise (horodatage + détails)
+- Génération automatique de graphiques SVG avec Pygal
+
+**Options choisies :**
+- Seuils de crise configurables dans `crise.py`
 
 ### ✅ Étape 4 : Supervision distante
 
-- Connexion **SSH** à une machine distante
-- Récupération des métriques à distance
+- Connexion SSH à une machine distante via Paramiko
+- Récupération des métriques à distance et stockage en base
 
 ### ✅ Étape 5 : Interface Web (Flask)
 
-- Dashboard web affichant les graphiques SVG
-- Consultation des dernières métriques et alertes
+- Dashboard affichant les graphiques SVG
+- Consultation des dernières métriques collectées
 
 ---
 
@@ -89,7 +96,7 @@ Puis accéder sur : http://127.0.0.1:5000
 
 ## ⏱️ Automatisation avec Cron
 
-La collecte peut être automatisée avec cron (testée sur VM Linux) :
+La collecte est automatisable via cron (testé sur VM Linux) :
 
     crontab -e
 
@@ -105,9 +112,9 @@ Exemple pour une collecte toutes les 5 minutes :
 - `02_stockage/stockage.py` — insertion SQLite
 - `02_stockage/cert_parser.py` — parsing CERT-FR
 - `03_alertes_affichage/crise.py` — détection de crise + envoi mail
-- `03_alertes_affichage/graphiques.py` — génération graphiques
-- `04_gestion_parc/supervision_ssh.py` — supervision distante
-- `05_interface_web/webapp.py` — interface Flask
+- `03_alertes_affichage/graphiques.py` — génération graphiques SVG
+- `04_gestion_parc/supervision_ssh.py` — supervision SSH distante
+- `05_interface_web/webapp.py` — dashboard Flask
 
 ---
 
@@ -115,10 +122,10 @@ Exemple pour une collecte toutes les 5 minutes :
 
 - Tous les scripts ont été testés sur une VM Linux (Debian/Ubuntu)
 - Les seuils de crise sont configurables directement dans `crise.py`
-- Le projet couvre l'ensemble de la chaîne : collecte → stockage → alerte → visualisation
+- Le projet couvre la chaîne complète : collecte → stockage → alerte → visualisation
 
 ---
 
 ## 🎓 Auteur
 
-- Younes Baziz - L2/L3 Informatique - 2025
+- Younes Baziz - Informatique - CERI - 2025
