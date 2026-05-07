@@ -1,10 +1,12 @@
 from flask import Flask, render_template
 import sqlite3
+from pathlib import Path
 import json
 
 app = Flask(__name__)
 
-BDD = "monitoring.db"
+BASE_DIR = Path(__file__).resolve().parents[1]
+BDD = BASE_DIR / "data" / "monitoring.db"
 
 def get_conn():
     return sqlite3.connect(BDD)
